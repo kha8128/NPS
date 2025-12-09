@@ -22,6 +22,15 @@ Complete training workflow:
 - Running training with PyTorch Lightning
 - Evaluating and saving the trained model
 
+### [03_finetuning_from_mace_mp.ipynb](03_finetuning_from_mace_mp.ipynb)
+**Fine-tuning from pretrained MACE weights**
+
+Transfer learning workflow:
+- Loading pretrained MACE checkpoints
+- Matching model architecture to pretrained weights
+- Fine-tuning with frozen or trainable backbone
+- Faster convergence with pretrained initialization
+
 ## Requirements
 
 To run these notebooks, you need:
