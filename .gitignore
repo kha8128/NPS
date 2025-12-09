@@ -137,3 +137,4 @@ CrevNet/ORIGINAL
 CrevNet/data
 PhyDNet/PhyDNet-master
 learning_to_simulate/data
+examples/checkpoint.ckpt
