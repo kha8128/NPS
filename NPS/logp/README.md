@@ -100,8 +100,8 @@ noisy_atoms.positions += np.random.normal(0, 0.1, atoms.positions.shape)
 denoised = denoise_structure(noisy_atoms, model, steps=8, device='cpu')
 
 # Check improvement
-print(f"Noise RMSD: {np.sqrt(np.mean((noisy_atoms.positions - atoms.positions)**2)):.3f} Å")
-print(f"After denoise: {np.sqrt(np.mean((denoised.positions - atoms.positions)**2)):.3f} Å")
+print(f"Noise RMSD: {np.sqrt(np.mean((noisy_atoms.positions - atoms.positions)**2)):.3f} $\AA$")
+print(f"After denoise: {np.sqrt(np.mean((denoised.positions - atoms.positions)**2)):.3f} $\AA$")
 ```
 
 ### Compute Order Parameters

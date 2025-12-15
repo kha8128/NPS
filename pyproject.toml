@@ -1,0 +1,135 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nps-logp"
+version = "0.1.0"
+description = "Log-Probability Foundation Model for Crystal Structure Denoising, Phase Classification, and Order Parameters"
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Hyuna Kwon", email = "hkwon7@binghamton.edu"},
+    {name = "Fei Zhou", email = "zhou6@llnl.gov"},
+    {name = "Babak Sadigh"},
+    {name = "Sebastien Hamel"},
+    {name = "Vincenzo Lordi"},
+    {name = "John Klepeis"},
+]
+maintainers = [
+    {name = "Hyuna Kwon", email = "hkwon7@binghamton.edu"},
+    {name = "Fei Zhou", email = "zhou6@llnl.gov"},
+]
+keywords = [
+    "machine learning",
+    "crystal structure",
+    "materials science",
+    "denoising",
+    "phase classification",
+    "order parameters",
+    "MACE",
+    "graph neural networks",
+    "equivariant neural networks",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+dependencies = [
+    "torch>=2.0.0",
+    "torch_geometric>=2.3.0",
+    "lightning>=2.0.0",
+    "numpy>=1.21.0",
+    "scipy>=1.7.0",
+    "mace-torch>=0.3.0",
+    "ase>=3.22.0",
+    "e3nn>=0.5.0",
+    "joblib>=1.1.0",
+    "tqdm>=4.64.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+docs = [
+    "sphinx>=6.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=1.0.0",
+]
+viz = [
+    "matplotlib>=3.5.0",
+    "seaborn>=0.12.0",
+]
+all = [
+    "nps-logp[dev,docs,viz]",
+]
+
+[project.urls]
+Homepage = "https://github.com/Critical-Materials-Institute/NPS"
+Documentation = "https://github.com/Critical-Materials-Institute/NPS#readme"
+Repository = "https://github.com/Critical-Materials-Institute/NPS"
+Issues = "https://github.com/Critical-Materials-Institute/NPS/issues"
+
+[project.scripts]
+nps-logp-train = "NPS.logp.scripts.train:main"
+nps-logp-infer = "NPS.logp.scripts.infer:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["NPS*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.yaml", "*.yml"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["NPS"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
