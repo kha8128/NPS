@@ -117,7 +117,7 @@ def classify_structure(
     structure_types: List[str],
     steps: int = 8,
     cutoff: float = 6.0,
-    sigma_scale: float = 1.0,
+    sigma_scale: float = 0.15,
     device: str = None,
     return_logp: bool = False,
 ) -> Dict:
@@ -192,7 +192,7 @@ def classify_trajectory(
     structure_types: List[str],
     steps: int = 8,
     cutoff: float = 6.0,
-    sigma_scale: float = 1.0,
+    sigma_scale: float = 0.15,
     device: str = None,
     verbose: bool = True,
 ) -> List[Dict]:
@@ -238,7 +238,7 @@ def compute_order_parameters(
     structure_types: List[str],
     steps: int = 8,
     cutoff: float = 6.0,
-    sigma_scale: float = 1.0,
+    sigma_scale: float = 0.15,
     device: str = None,
 ) -> Dict[str, np.ndarray]:
     """

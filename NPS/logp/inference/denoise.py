@@ -22,7 +22,7 @@ def denoise_snapshot(
     model: torch.nn.Module,
     steps: int = 8,
     cutoff: float = 6.0,
-    sigma_scale: float = 1.0,
+    sigma_scale: float = 0.15,
     device: str = None,
 ) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     """
@@ -111,7 +111,7 @@ def denoise_structure(
     model: torch.nn.Module,
     steps: int = 8,
     cutoff: float = 6.0,
-    sigma_scale: float = 1.0,
+    sigma_scale: float = 0.15,
     device: str = None,
     return_trajectory: bool = False,
 ) -> Union[Atoms, Tuple[Atoms, List[Atoms]]]:
@@ -159,7 +159,7 @@ def denoise_trajectory(
     model: torch.nn.Module,
     steps: int = 8,
     cutoff: float = 6.0,
-    sigma_scale: float = 1.0,
+    sigma_scale: float = 0.15,
     device: str = None,
     verbose: bool = True,
 ) -> List[Atoms]:
@@ -203,7 +203,7 @@ def denoise_large_structure(
     model: torch.nn.Module,
     steps: int = 8,
     cutoff: float = 6.0,
-    sigma_scale: float = 1.0,
+    sigma_scale: float = 0.15,
     chunk_size: float = 20.0,
     device: str = None,
 ) -> Atoms:

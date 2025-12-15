@@ -21,18 +21,23 @@ from pathlib import Path
 # ============================================
 
 CHECKPOINTS = {
+    "logp_scaled_elemental": {
+        "url": "https://github.com/kha8128/NPS/releases/download/v0.1.0/logp_scaled_elemental.ckpt",
+        "size_mb": 244,
+        "description": "40 elemental - for structure classification",
+        "structure_types": None,  # Structure types saved in checkpoint
+    },
     "logp_strained_scaled_elemental": {
-        # GitHub Release URL (update OWNER, REPO, TAG, FILENAME)
-        "url": "https://github.com/Critical-Materials-Institute/NPS/releases/download/v0.1.0/logp_strained_scaled_elemental.ckpt",
-        "size_mb": 233,
-        "description": "Elemental crystals (BCC/FCC/HCP) with strain augmentation - best for MD denoising",
-        "structure_types": ["bcc", "fcc", "hcp"],
+        "url": "https://github.com/kha8128/NPS/releases/download/v0.1.0/logp_strained_scaled_elemental.ckpt",
+        "size_mb": 244,
+        "description": "40 AFLOW elemental prototypes with strain augmentation - recommended for MD denoising",
+        "structure_types": None,  # Uses STRUCTURE_TYPES from constants.py (40 prototypes)
     },
     "logp_scaled_elemental_binary": {
-        "url": "https://github.com/Critical-Materials-Institute/NPS/releases/download/v0.1.0/logp_scaled_elemental_binary.ckpt",
-        "size_mb": 233,
-        "description": "Elemental + binary compounds - best for structure classification",
-        "structure_types": ["bcc", "fcc", "hcp"],  # Update with actual types
+        "url": "https://github.com/kha8128/NPS/releases/download/v0.1.0/logp_scaled_elemental_binary.ckpt",
+        "size_mb": 246,
+        "description": "40 elemental + 363 binary prototypes - for structure classification",
+        "structure_types": None,  # Structure types saved in checkpoint
     },
 }
 

@@ -42,7 +42,7 @@ class PeriodicStructureDataModule(L.LightningDataModule):
         dataset_cls: type = PeriodicStructureDataset,
     ):
         super().__init__()
-        self.save_hyperparameters(ignore=['dataset_cls'])
+        self.save_hyperparameters(ignore=['dataset_cls', 'cutoff'])
         
         self.file_list = file_list
         self.cutoff = cutoff
@@ -152,7 +152,7 @@ class StrainedPeriodicStructureDataModule(L.LightningDataModule):
         dataset_cls: type = PeriodicStructureDataset,
     ):
         super().__init__()
-        self.save_hyperparameters(ignore=['dataset_cls'])
+        self.save_hyperparameters(ignore=['dataset_cls', 'cutoff'])
         
         self.file_list = file_list
         self.cutoff = cutoff

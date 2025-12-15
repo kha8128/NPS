@@ -1,203 +1,146 @@
-# NPS-LogP: Log-Probability Foundation Model for Crystal Structures
+# NPS: Neural Phase Structures
 
-A unified framework for crystal structure **denoising**, **phase classification**, and **order parameter estimation** based on log-probability modeling.
+A machine learning framework for crystal structure analysis, including denoising, phase classification, and order parameter estimation.
 
-## Overview
+## Features
 
-This module implements the method described in:
+### LogP Foundation Model (`NPS.logp`)
 
-> Kwon et al., "A log-probability foundation model for crystal structure denoising, phase classification, and order parameters"
+A unified framework for crystal structure analysis based on log-probability modeling:
 
-The key idea is to train a model that predicts per-atom, per-class log-probabilities $\log P_{ac}$ for each atom $a$ and crystal class $c$. From these:
+- **Denoising**: Remove thermal noise from MD snapshots via gradient ascent in log-probability space
+- **Phase Classification**: Assign per-atom phase labels across hundreds of AFLOW prototypes
+- **Order Parameters**: Continuous, defect-sensitive OPs derived from per-phase logits $l_{ac}$
 
-- **Denoising**: Gradient ascent in log-probability space removes thermal noise
-- **Classification**: `argmax` over classes gives phase labels
-- **Order Parameters**: The $\log P$ values themselves serve as continuous OPs
+Key advantages over traditional methods (PTM, CNA):
+- Universal: Works with any AFLOW prototype, not just FCC/BCC/HCP
+- Robust: Accurate classification even at melting temperatures
+- Probabilistic: Per-atom confidence scores expose ambiguity
+- Interpretable: Logits measure squared distance to ideal prototypes
 
 ## Installation
 
 ```bash
-# Install NPS (if not already)
-pip install -e /path/to/NPS
+# Clone repository
+git clone https://github.com/kha8128/NPS.git
+cd NPS
 
-# Required dependencies
-pip install torch torch_geometric lightning mace-torch ase
+# Install (requires Python 3.9+)
+pip install -e .
+
+# Download pre-trained checkpoint (~244 MB)
+python scripts/download_checkpoint.py
+```
+
+See [INSTALL.md](INSTALL.md) for detailed instructions including GPU setup.
+
+## Pre-trained Checkpoints
+
+| Checkpoint | Size | Description |
+|------------|------|-------------|
+| `logp_strained_scaled_elemental` | 244 MB | 40 AFLOW prototypes with strain augmentation (**recommended**) |
+| `logp_scaled_elemental` | 244 MB | 40 AFLOW prototypes without strain augmentation |
+| `logp_scaled_elemental_binary` | 244 MB | 40 elemental + 363 binary prototypes |
+
+Checkpoints are hosted on [GitHub Releases](https://github.com/kha8128/NPS/releases) due to size.
+
+```bash
+# Download recommended checkpoint
+python scripts/download_checkpoint.py --name logp_strained_scaled_elemental
+
+# Download all checkpoints
+python scripts/download_checkpoint.py --all
+
+# List available checkpoints
+python scripts/download_checkpoint.py --list
 ```
 
 ## Quick Start
 
-### Inference with Pre-trained Model
+### Classify a Crystal Structure
 
 ```python
-from NPS.logp import denoise_structure, classify_structure
+from NPS.logp import classify_structure
 from NPS.logp.models import LitLogPModel
-import ase.io
+from NPS.logp.constants import STRUCTURE_TYPES
+from ase.build import bulk
 
-# Load model
-lit_model = LitLogPModel.load_from_checkpoint("model.ckpt")
-model = lit_model.get_inference_model()
+# Load pre-trained model
+model = LitLogPModel.load_from_checkpoint(
+    "checkpoints/logp_strained_scaled_elemental.ckpt",
+    map_location='cpu'
+).get_inference_model()
 
-# Load structure
-atoms = ase.io.read("noisy_structure.extxyz")
+# Create or load structure
+atoms = bulk('Fe', 'bcc', a=2.87, cubic=True) * (3,3,3)
 
-# Denoise
-denoised = denoise_structure(atoms, model, steps=8)
-
-# Classify
+# Classify with denoising
 result = classify_structure(
-    atoms, model, 
-    structure_types=["bcc", "fcc", "hcp"],
-    steps=8
+    atoms, model,
+    structure_types=STRUCTURE_TYPES,
+    steps=8,
+    device='cpu'
 )
-print(f"Predicted phase: {result['majority_class']}")
+
+print(f"Phase: {result['majority_class']}")
 print(f"Confidence: {result['confidence']:.3f}")
 ```
 
-### Training a New Model
+### Denoise a Thermal MD Snapshot
+
+```python
+from NPS.logp import denoise_structure
+import numpy as np
+
+# Add thermal noise to simulate MD snapshot
+noisy_atoms = atoms.copy()
+noisy_atoms.positions += np.random.normal(0, 0.1, atoms.positions.shape)
+
+# Remove thermal noise (8 iterations)
+denoised = denoise_structure(noisy_atoms, model, steps=8, device='cpu')
+
+# Check improvement
+print(f"Noise RMSD: {np.sqrt(np.mean((noisy_atoms.positions - atoms.positions)**2)):.3f} Å")
+print(f"After denoise: {np.sqrt(np.mean((denoised.positions - atoms.positions)**2)):.3f} Å")
+```
+
+### Compute Order Parameters
+
+```python
+from NPS.logp.inference import compute_order_parameters
+
+ops = compute_order_parameters(
+    atoms, model,
+    structure_types=STRUCTURE_TYPES,
+    device='cpu'
+)
+
+# ops["A_cI2_229"] contains per-atom BCC logits (order parameter)
+# ops["max_logp"] contains max logit for each atom (confidence)
+```
+
+### Command-Line Interface
 
 ```bash
+# Train a model (using sample data)
 python -m NPS.logp.scripts.train \
-    --train_data "data/structures/*.extxyz" \
-    --structure_types "bcc,fcc,hcp,omega" \
-    --batch_size 8 \
-    --lr 1e-4 \
-    --max_steps 100000 \
-    --output_dir ./training
-```
+    --train_data "examples/sample_data/*.extxyz" \
+    --structure_types "A_cI2_229,A_cF4_225,A_hP2_194" \
+    --batch_size 8
 
-For distributed training:
-
-```bash
-torchrun --nproc_per_node=4 -m NPS.logp.scripts.train \
-    --train_data "data/structures/*.extxyz" \
-    --structure_types "bcc,fcc,hcp" \
-    --gpus_per_node 4
-```
-
-### Command-Line Inference
-
-```bash
-# Classify structures
-python -m NPS.logp.scripts.infer \
-    --checkpoint model.ckpt \
-    --input "structures/*.extxyz" \
-    --structure_types "bcc,fcc,hcp" \
-    --mode classify
-
-# Denoise a trajectory
-python -m NPS.logp.scripts.infer \
-    --checkpoint model.ckpt \
-    --input trajectory.extxyz \
-    --mode denoise \
-    --output denoised.extxyz
-
-# Compute order parameters
+# Run inference
 python -m NPS.logp.scripts.infer \
     --checkpoint model.ckpt \
     --input structure.extxyz \
-    --structure_types "bcc,fcc,hcp" \
-    --mode order_params
+    --structure_types "A_cI2_229,A_cF4_225,A_hP2_194" \
+    --mode classify
 ```
 
-## Module Structure
+## Documentation
 
-```
-NPS/logp/
-├── __init__.py              # Main exports
-├── README.md                # This file
-│
-├── models/
-│   ├── mace_denoiser.py     # MACE-based denoiser architecture
-│   ├── wrappers.py          # Model wrapper with logP computation
-│   └── lightning_module.py  # PyTorch Lightning training module
-│
-├── data/
-│   ├── datasets.py          # PyG datasets for crystal structures
-│   ├── datamodules.py       # Lightning DataModules
-│   └── utils.py             # Chunking, neighbor lists, etc.
-│
-├── inference/
-│   ├── denoise.py           # Denoising functions
-│   └── classify.py          # Classification functions
-│
-├── utils/
-│   ├── graph_utils.py       # Graph construction utilities
-│   └── visualization.py     # Plotting utilities
-│
-└── scripts/
-    ├── train.py             # Training CLI
-    └── infer.py             # Inference CLI
-```
-
-## API Reference
-
-### Inference Functions
-
-```python
-# Denoise a single structure
-from NPS.logp import denoise_structure
-denoised = denoise_structure(atoms, model, steps=8)
-
-# Denoise a trajectory
-from NPS.logp import denoise_trajectory
-denoised_traj = denoise_trajectory(trajectory, model, steps=8)
-
-# Classify structure
-from NPS.logp import classify_structure
-result = classify_structure(atoms, model, structure_types, steps=8)
-
-# Zero-shot classification (no denoising)
-from NPS.logp import classify_zeroshot
-predictions, confidence = classify_zeroshot(atoms, model, structure_types)
-```
-
-### Model Creation
-
-```python
-from NPS.logp.models import LogPModelWrapper, LitLogPModel
-
-# For inference
-model = LogPModelWrapper(
-    num_species=89,
-    nclass=4,
-    cutoff=6.0,
-    hidden_irreps="128x0e+128x1o+128x2e",
-)
-
-# For training
-lit_model = LitLogPModel(
-    nclass=4,
-    cutoff=6.0,
-    sigma_max=0.15,
-    wt_classification=1.0,
-    learn_rate=1e-4,
-)
-```
-
-### Data Loading
-
-```python
-from NPS.logp.data import StrainedPeriodicStructureDataModule
-
-datamodule = StrainedPeriodicStructureDataModule(
-    file_list=["struct1.extxyz", "struct2.extxyz"],
-    cutoff=6.0,
-    structure_types=["bcc", "fcc", "hcp"],
-    batch_size=8,
-)
-```
-
-## Training Data Format
-
-Training data should be provided as structure files (extxyz, cif, POSCAR, etc.) with one file per prototype. The filename stem is used as the structure type label:
-
-```
-data/
-├── bcc.extxyz       # BCC prototype
-├── fcc.extxyz       # FCC prototype
-├── hcp.extxyz       # HCP prototype
-└── omega.extxyz     # Omega prototype
-```
+- [LogP Module README](NPS/logp/README.md) - Detailed API documentation
+- [Installation Guide](INSTALL.md) - Setup instructions for various environments
+- [Examples](examples/) - Jupyter notebooks and tutorials
 
 ## Citation
 
@@ -205,8 +148,8 @@ If you use this code, please cite:
 
 ```bibtex
 @article{kwon2025logp,
-  title={A log-probability foundation model for crystal structure denoising, 
-         phase classification, and order parameters},
+  title={A probabilistic foundation model for crystal structure 
+         denoising, phase classification, and order parameters},
   author={Kwon, Hyuna and Sadigh, Babak and Hamel, Sebastien and 
           Lordi, Vincenzo and Klepeis, John and Zhou, Fei},
   journal={arXiv preprint arXiv:2512.11077},
@@ -215,6 +158,10 @@ If you use this code, please cite:
 }
 ```
 
-## License
+## Acknowledgments
 
-This code is released under the same license as the NPS repository. See the main LICENSE file for details.
+This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

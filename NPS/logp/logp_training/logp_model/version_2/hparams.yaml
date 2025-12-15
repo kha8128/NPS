@@ -1,0 +1,30 @@
+batch_size: 8
+cutoff: 6.0
+duplicate: 32
+ema_decay: 0.9999
+file_list:
+- examples/sample_data/A_cF4_225.extxyz
+- examples/sample_data/A_cI2_229.extxyz
+- examples/sample_data/A_hP2_194.extxyz
+freeze_backbone: false
+hidden_irreps: 128x0e+128x1o+128x2e
+learn_rate: 0.0001
+lr_schedule: cosine
+nclass: 3
+num_interactions: 3
+num_species: 100
+num_workers: 4
+scale_range: !!python/tuple
+- 0.9
+- 1.1
+sigma_logp_scale: 1.0
+sigma_max: 0.15
+strain_delta: 0.05
+strain_symmetric: true
+structure_types:
+- A_cI2_229
+- A_cF4_225
+- A_hP2_194
+train_size: 0.9
+use_light_model: false
+wt_classification: 1.0

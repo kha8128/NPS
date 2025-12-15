@@ -4,15 +4,15 @@ Training script for the LogP foundation model.
 
 Example usage:
     python -m NPS.logp.scripts.train \
-        --train_data "data/structures/*.extxyz" \
-        --structure_types "bcc,fcc,hcp" \
+        --train_data "examples/sample_data/*.extxyz" \
+        --structure_types "A_cI2_229,A_cF4_225,A_hP2_194" \
         --batch_size 8 \
         --max_steps 100000
 
 For distributed training:
     torchrun --nproc_per_node=4 -m NPS.logp.scripts.train \
-        --train_data "data/structures/*.extxyz" \
-        --structure_types "bcc,fcc,hcp"
+        --train_data "examples/sample_data/*.extxyz" \
+        --structure_types "A_cI2_229,A_cF4_225,A_hP2_194"
 """
 
 import argparse
@@ -211,9 +211,10 @@ def main():
             dist.init_process_group(backend="nccl", init_method="env://")
     
     # Create data module
+    # Use larger cutoff for graph precomputation (edges are filtered during training)
     datamodule = StrainedPeriodicStructureDataModule(
         file_list=file_list,
-        cutoff=args.cutoff + 1.0,  # Larger cutoff for precomputation
+        cutoff=args.cutoff + 1.0,
         duplicate=32,
         batch_size=args.batch_size,
         num_workers=4,
