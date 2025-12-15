@@ -209,8 +209,9 @@ If you use this code, please cite:
          phase classification, and order parameters},
   author={Kwon, Hyuna and Sadigh, Babak and Hamel, Sebastien and 
           Lordi, Vincenzo and Klepeis, John and Zhou, Fei},
-  journal={},
-  year={2025}
+  journal={arXiv preprint arXiv:2512.11077},
+  year={2025},
+  url={https://arxiv.org/abs/2512.11077}
 }
 ```
 
