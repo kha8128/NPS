@@ -32,7 +32,7 @@ pip install -e .
 python scripts/download_checkpoint.py
 ```
 
-See [INSTALL.md](INSTALL.md) for detailed instructions including GPU setup.
+See [INSTALL.md](../../INSTALL.md) for detailed instructions including GPU setup.
 
 ## Pre-trained Checkpoints
 
