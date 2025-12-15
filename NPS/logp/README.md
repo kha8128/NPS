@@ -138,9 +138,9 @@ python -m NPS.logp.scripts.infer \
 
 ## Documentation
 
-- [LogP Module README](NPS/logp/README.md) - Detailed API documentation
-- [Installation Guide](INSTALL.md) - Setup instructions for various environments
-- [Examples](examples/) - Jupyter notebooks and tutorials
+- [Main NPS Repository](../../README.md) - Detailed API documentation
+- [Installation Guide](../../INSTALL.md) - Setup instructions for various environments
+- [Examples](../../examples/) - Jupyter notebooks and tutorials
 
 ## Citation
 
@@ -164,4 +164,4 @@ This work was performed under the auspices of the U.S. Department of Energy by L
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
